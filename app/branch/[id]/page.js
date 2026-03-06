@@ -163,17 +163,16 @@ export default function BranchDetailsPage() {
   // ✅ FIXED: Map iframe embed src — use googleMapLink from branchDetails
   const getMapEmbedSrc = () => {
     if (googleMapLink) {
-      // Convert share link to embed link
-      // e.g. https://maps.google.com/maps?q=... → add &output=embed
-      // e.g. https://www.google.com/maps/place/... → convert to embed format
-      if (googleMapLink.includes('output=embed')) return googleMapLink;
+      // If manager pasted an embed link directly, use as-is
       if (googleMapLink.includes('/maps/embed')) return googleMapLink;
-      // For standard share links, append output=embed
+      if (googleMapLink.includes('output=embed')) return googleMapLink;
+      // Convert standard share link to embed by appending output=embed
       const separator = googleMapLink.includes('?') ? '&' : '?';
       return `${googleMapLink}${separator}output=embed`;
     }
-    // Fallback: search by address
-    return `https://maps.google.com/maps?q=${encodeURIComponent(branch.address + ', ' + branch.city)}&z=15&output=embed`;
+    // Fallback: use branch name + address for a precise search
+    const query = encodeURIComponent(branch.name + ', ' + branch.address + ', ' + branch.city);
+    return `https://maps.google.com/maps?q=${query}&z=17&output=embed`;
   };
 
   return (
