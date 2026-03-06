@@ -5127,6 +5127,10 @@ code {
     justify-content: space-between;
   }
 
+  .md\:gap-4 {
+    gap: 1rem;
+  }
+
   .md\:p-12 {
     padding: 3rem;
   }

@@ -36,13 +36,11 @@ export default function ManagerDashboard() {
         apiCall('/tenants/due'),
       ]);
       
-      // Filter beds for this branch that are not occupied and have ACTIVE status
       const branchBeds = bedsData.filter(b => b.branchId === branchId);
       const availableBeds = branchBeds.filter(b => !b.isOccupied && b.status === 'ACTIVE');
       const occupiedBeds = branchBeds.filter(b => b.isOccupied && b.status === 'ACTIVE');
       const totalActiveBeds = branchBeds.filter(b => b.status === 'ACTIVE');
       
-      // Override stats with correct calculations
       const correctedStats = {
         ...data,
         stats: {
@@ -91,8 +89,8 @@ export default function ManagerDashboard() {
           <p className="text-slate-600 mt-1">Overview of your branch performance</p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stats Grid — 2 columns on mobile, 4 on desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatCard
             title="Total Tenants"
             value={stats?.stats?.totalTenants || 0}
@@ -185,7 +183,7 @@ export default function ManagerDashboard() {
           </DialogContent>
         </Dialog>
 
-        {/* Recent Activities - Fixed Height with Scroll */}
+        {/* Recent Activities */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="flex flex-col" style={{ height: '320px' }}>
             <CardHeader className="flex-shrink-0">

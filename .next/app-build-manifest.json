@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/page": [
+    "/manager/payments/due/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/manager/payments/due/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -11,20 +11,25 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/branch/[id]/page": [
+    "/manager/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/branch/[id]/page.js"
+      "static/chunks/app/manager/page.js"
+    ],
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
     ],
     "/admin/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/admin/page.js"
     ],
-    "/admin/branches/page": [
+    "/admin/reports/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/branches/page.js"
+      "static/chunks/app/admin/reports/page.js"
     ]
   }
 }
