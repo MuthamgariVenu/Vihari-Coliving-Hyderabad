@@ -1,6 +1,6 @@
 {
-  "/branch/[id]/page": "app/branch/[id]/page.js",
+  "/api/[[...path]]/route": "app/api/[[...path]]/route.js",
+  "/page": "app/page.js",
   "/manager/page": "app/manager/page.js",
-  "/manager/payments/due/page": "app/manager/payments/due/page.js",
-  "/api/[[...path]]/route": "app/api/[[...path]]/route.js"
+  "/manager/complaints/page": "app/manager/complaints/page.js"
 }

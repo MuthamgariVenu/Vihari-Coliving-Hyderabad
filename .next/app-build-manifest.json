@@ -25,6 +25,36 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/manager/payments/due/page.js"
+    ],
+    "/admin/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/admin/page.js"
+    ],
+    "/admin/tenants/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/admin/tenants/page.js"
+    ],
+    "/change-password/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/change-password/page.js"
+    ],
+    "/tenant/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/tenant/page.js"
+    ],
+    "/tenant/complaints/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/tenant/complaints/page.js"
+    ],
+    "/manager/complaints/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/manager/complaints/page.js"
     ]
   }
 }

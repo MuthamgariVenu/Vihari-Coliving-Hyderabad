@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { apiCall } from '@/lib/api';
 
 export function DashboardLayout({ children, role }) {
   const [user, setUser] = useState(null);
   const [branchName, setBranchName] = useState('');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [pendingComplaints, setPendingComplaints] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,9 +32,13 @@ export function DashboardLayout({ children, role }) {
 
     setUser(parsedUser);
 
-    // Fetch branch name for Manager and Tenant
     if (parsedUser.branchId && (role === 'MANAGER' || role === 'TENANT')) {
       fetchBranchName(parsedUser.branchId);
+    }
+
+    // Fetch pending complaints count for ADMIN and MANAGER
+    if (role === 'ADMIN' || role === 'MANAGER') {
+      fetchPendingComplaints();
     }
   }, [role, router]);
 
@@ -41,11 +46,19 @@ export function DashboardLayout({ children, role }) {
     try {
       const branches = await apiCall('/branches');
       const branch = branches.find(b => b.branchId === branchId);
-      if (branch) {
-        setBranchName(branch.name);
-      }
+      if (branch) setBranchName(branch.name);
     } catch (error) {
       console.error('Error fetching branch:', error);
+    }
+  };
+
+  const fetchPendingComplaints = async () => {
+    try {
+      const complaints = await apiCall('/complaints');
+      const pending = complaints.filter(c => c.status === 'PENDING').length;
+      setPendingComplaints(pending);
+    } catch (error) {
+      console.error('Error fetching complaints:', error);
     }
   };
 
@@ -64,13 +77,13 @@ export function DashboardLayout({ children, role }) {
     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex md:w-64 md:flex-col">
-        <Sidebar role={role} />
+        <Sidebar role={role} pendingComplaints={pendingComplaints} />
       </div>
 
       {/* Mobile Sidebar */}
       <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
         <SheetContent side="left" className="p-0 w-64">
-          <Sidebar role={role} onClose={() => setIsMobileOpen(false)} />
+          <Sidebar role={role} pendingComplaints={pendingComplaints} onClose={() => setIsMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 

@@ -15,7 +15,7 @@ const adminRoutes = [
   { href: '/admin/payments', label: 'Payments', icon: Receipt },
   { href: '/admin/expenses', label: 'Expenses', icon: Wallet },
   { href: '/admin/employees', label: 'Employees', icon: UsersRound },
-  { href: '/admin/complaints', label: 'Complaints', icon: MessageSquare },
+  { href: '/admin/complaints', label: 'Complaints', icon: MessageSquare, showBadge: true },
   { href: '/admin/exits', label: 'Exit Requests', icon: LogOut },
   { href: '/admin/reports', label: 'Reports', icon: FileBarChart },
   { href: '/admin/alerts', label: 'Alerts', icon: Bell },
@@ -30,7 +30,7 @@ const managerRoutes = [
   { href: '/manager/payments', label: 'Payments', icon: Receipt },
   { href: '/manager/expenses', label: 'Expenses', icon: Wallet },
   { href: '/manager/employees', label: 'Employees', icon: UsersRound },
-  { href: '/manager/complaints', label: 'Complaints', icon: MessageSquare },
+  { href: '/manager/complaints', label: 'Complaints', icon: MessageSquare, showBadge: true },
   { href: '/manager/exits', label: 'Exit Requests', icon: LogOut },
   { href: '/manager/branch-details', label: 'Branch Details', icon: Settings },
   { href: '/manager/alerts', label: 'Alerts', icon: Bell },
@@ -43,7 +43,7 @@ const tenantRoutes = [
   { href: '/tenant/exit', label: 'Exit Request', icon: LogOut },
 ];
 
-export function Sidebar({ role, onClose }) {
+export function Sidebar({ role, onClose, pendingComplaints = 0 }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -78,6 +78,8 @@ export function Sidebar({ role, onClose }) {
         {routes.map((route) => {
           const Icon = route.icon;
           const isActive = pathname === route.href;
+          const showBadge = route.showBadge && pendingComplaints > 0;
+
           return (
             <Link key={route.href} href={route.href} onClick={onClose}>
               <div
@@ -88,8 +90,14 @@ export function Sidebar({ role, onClose }) {
                     : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
                 )}
               >
-                <Icon className="h-5 w-5" />
-                {route.label}
+                <Icon className="h-5 w-5 flex-shrink-0" />
+                <span className="flex-1">{route.label}</span>
+                {/* 🔴 Pending complaints badge */}
+                {showBadge && (
+                  <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center">
+                    {pendingComplaints > 99 ? '99+' : pendingComplaints}
+                  </span>
+                )}
               </div>
             </Link>
           );
