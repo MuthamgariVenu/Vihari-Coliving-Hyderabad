@@ -62,7 +62,7 @@ const ExpandableSection = ({ title, subtitle, buttonText, icon: Icon, children, 
           </Button>
         </div>
       </div>
-      <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+      <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="px-6 pb-6 pt-2 border-t border-white/5">{children}</div>
       </div>
     </div>

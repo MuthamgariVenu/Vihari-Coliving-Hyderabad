@@ -137,40 +137,36 @@ Vihari Co-Living..
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="container mx-auto text-center max-w-4xl">
-          <div className="inline-flex items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-full px-4 py-2 mb-8">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span className="text-sm text-slate-300">Complete Hostel Management Solution</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            <span className="text-white">Hostel Management</span>
-            <br />
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              ERP System
-            </span>
-          </h1>
-          
-          <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Streamline your hostel operations with our powerful management platform. 
-            Track tenants, payments, rooms, and more in one place.
-          </p>
-          
-          <Button
-            onClick={() => setIsLoginOpen(true)}
-            size="lg"
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-10 py-6 text-lg rounded-full shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105"
-          >
-            Login Now
-          </Button>
-        </div>
-      </section>
+     {/* Hero Section */}
+<section className="pt-20 pb-05 px-6">
+  <div className="container mx-auto text-center max-w-4xl">
+    
+    <div className="inline-flex items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-full px-4 py-2 mb-6">
+      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+      <span className="text-sm text-slate-300">
+        Complete Hostel Management Solution
+      </span>
+    </div>
+
+    <h1 className="text-4xl md:text-  6xl font-bold mb-5 leading-tight">
+      <span className="text-white">Hostel Management</span>
+      <br />
+      <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+        ERP System
+      </span>
+    </h1>
+
+    <p className="text-lg text-slate-400 mb-6 max-w-2xl mx-auto leading-relaxed">
+      Streamline your hostel operations with our powerful management platform. 
+      Track tenants, payments, rooms, and more in one place.
+    </p>
+
+  </div>
+</section>
 
       {/* Branches Section */}
       {branches.length > 0 && (
-        <section className="py-20 px-6 bg-slate-800/30">
+        <section className="py-19 px-6 bg-slate-800/30">
           <div className="container mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-white mb-4">Our Branches</h2>

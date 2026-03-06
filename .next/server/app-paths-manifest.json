@@ -1,6 +1,4 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/[[...path]]/route": "app/api/[[...path]]/route.js",
-  "/manager/page": "app/manager/page.js",
-  "/manager/branch-details/page": "app/manager/branch-details/page.js"
+  "/branch/[id]/page": "app/branch/[id]/page.js",
+  "/api/[[...path]]/route": "app/api/[[...path]]/route.js"
 }
