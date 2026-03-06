@@ -626,7 +626,7 @@ async function handleRoute(request, { params }) {
       }
     }
 
-    // POST /api/upload/gallery - Upload gallery image
+    // POST /api/upload/gallery - Upload gallery image (stored as Base64 in MongoDB)
     if (route === '/upload/gallery' && method === 'POST') {
       if (currentUser.role === 'TENANT') {
         return handleCORS(NextResponse.json({ error: 'Access denied' }, { status: 403 }));
@@ -647,32 +647,24 @@ async function handleRoute(request, { params }) {
           return handleCORS(NextResponse.json({ error: 'Invalid file type. Allowed: JPG, PNG' }, { status: 400 }));
         }
 
-        // Validate file size (5MB max)
-        if (file.size > 5 * 1024 * 1024) {
-          return handleCORS(NextResponse.json({ error: 'File too large. Max 5MB allowed' }, { status: 400 }));
+        // Validate file size (2MB max for Base64 storage in MongoDB)
+        if (file.size > 2 * 1024 * 1024) {
+          return handleCORS(NextResponse.json({ error: 'File too large. Max 2MB allowed for gallery images' }, { status: 400 }));
         }
 
-        // Get file extension
-        const ext = file.name.split('.').pop().toLowerCase();
-        const fileName = `gallery_${branchId}_${Date.now()}.${ext}`;
-        
-        // Ensure upload directory exists
-        const uploadDir = '/app/frontend/public/uploads/gallery';
-        if (!existsSync(uploadDir)) {
-          await mkdir(uploadDir, { recursive: true });
-        }
-
-        // Save file
-        const filePath = `${uploadDir}/${fileName}`;
+        // Convert file to Base64 data URL - stored directly in MongoDB
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
-        await writeFile(filePath, buffer);
+        const base64 = buffer.toString('base64');
+        const dataUrl = `data:${file.type};base64,${base64}`;
 
+        // Return the Base64 data URL as the filePath
+        // This will be stored in the galleryImages array in BranchDetails
         return handleCORS(NextResponse.json({ 
-          success: true, 
-          fileName,
-          filePath: `/uploads/gallery/${fileName}`
+          success: true,
+          filePath: dataUrl
         }));
+
       } catch (error) {
         console.error('Gallery upload error:', error);
         return handleCORS(NextResponse.json({ error: 'File upload failed: ' + error.message }, { status: 500 }));
@@ -1486,51 +1478,6 @@ async function handleRoute(request, { params }) {
     }
 
     // ============= BRANCH DETAILS ROUTES =============
-
-    // GET /api/branch-details - Get all branch details (public)
-    if (route === '/branch-details' && method === 'GET') {
-      const branchDetails = await BranchDetails.find({}).lean();
-      return handleCORS(NextResponse.json(branchDetails.map(bd => ({
-        ...bd,
-        _id: undefined
-      }))));
-    }
-
-    // GET /api/branch-details/:branchId - Get branch details by branchId (public)
-    if (route.startsWith('/branch-details/') && method === 'GET' && path.length === 2) {
-      const branchId = path[1];
-      
-      // Get branch details
-      let branchDetails = await BranchDetails.findOne({ branchId }).lean();
-      
-      // Auto-calculate stats from rooms and beds
-      const rooms = await Room.find({ branchId, status: 'ACTIVE' });
-      const beds = await Bed.find({ branchId, status: 'ACTIVE' });
-      const availableBeds = beds.filter(b => !b.isOccupied).length;
-      
-      const stats = {
-        totalRooms: rooms.length,
-        totalBeds: beds.length,
-        availableBeds: availableBeds
-      };
-      
-      if (!branchDetails) {
-        // Return default with auto-calculated stats
-        return handleCORS(NextResponse.json({
-          branchId,
-          facilities: [],
-          food: { breakfast: [], lunch: [], dinner: [] },
-          rent: { single: 0, double: 0, triple: 0 },
-          stats
-        }));
-      }
-      
-      // Update stats in response
-      branchDetails.stats = stats;
-      delete branchDetails._id;
-      
-      return handleCORS(NextResponse.json(branchDetails));
-    }
 
     // POST /api/branch-details - Create/Update branch details (Manager only)
     if (route === '/branch-details' && method === 'POST') {
