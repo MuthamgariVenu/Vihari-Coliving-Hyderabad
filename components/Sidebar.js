@@ -116,4 +116,4 @@ export function Sidebar({ role, onClose, pendingComplaints = 0 }) {
       </div>
     </div>
   );
-}
+} 
