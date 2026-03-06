@@ -138,8 +138,8 @@ export default function ManagerDashboard() {
           <div onClick={() => router.push('/manager/payments/due')} className="cursor-pointer">
             <StatCard
               title="Payment Due"
-              value={`${dueData.count} Tenants Due`}
-              trend={`₹${dueData.totalDue.toLocaleString()} Due Amount`}
+              value={`₹${dueData.totalDue.toLocaleString()}`}
+              trend={`${dueData.count} Tenants Due`}
               icon={AlertCircle}
               color="red"
             />
