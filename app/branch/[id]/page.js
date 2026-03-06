@@ -13,39 +13,19 @@ import {
   ChevronLeft, ChevronRight, ImageIcon, Mail
 } from 'lucide-react';
 
-// Complete facility icons mapping
 const facilityIcons = {
-  'Wifi': Wifi, 
-  'WiFi': Wifi, 
-  'Food': UtensilsCrossed, 
-  'Hot Water': Flame,
-  'Washing Machine': WashingMachine, 
-  'Two Wheeler Parking': Car,
-  'Gym': Dumbbell, 
-  'Security': Shield,
-  'Security / CCTV': Camera,
-  'Refrigerator': Refrigerator,
-  'Water Dispenser': Droplets,
-  'Power Backup': Zap,
-  'Geyser': ThermometerSun,
-  'Kitchen': CookingPot,
-  'Self Cooking': CookingPot,
-  'Common Kitchen': CookingPot,
-  'Daily Cleaning': Shield,
-  'Water Dispenser Each Floor': Droplets,
-  'Refrigerator Each Floor': Refrigerator,
-  'Laundry': WashingMachine,
-  'AC': ThermometerSun
+  'Wifi': Wifi, 'WiFi': Wifi, 'Food': UtensilsCrossed, 'Hot Water': Flame,
+  'Washing Machine': WashingMachine, 'Two Wheeler Parking': Car,
+  'Gym': Dumbbell, 'Security': Shield, 'Security / CCTV': Camera,
+  'Refrigerator': Refrigerator, 'Water Dispenser': Droplets, 'Power Backup': Zap,
+  'Geyser': ThermometerSun, 'Kitchen': CookingPot, 'Self Cooking': CookingPot,
+  'Common Kitchen': CookingPot, 'Daily Cleaning': Shield,
+  'Water Dispenser Each Floor': Droplets, 'Refrigerator Each Floor': Refrigerator,
+  'Laundry': WashingMachine, 'AC': ThermometerSun
 };
 
-// Helper: convert branch name to URL slug (same logic as home page)
 function toBranchSlug(name) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
+  return name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
 }
 
 const ExpandableSection = ({ title, subtitle, buttonText, icon: Icon, children, defaultOpen = false }) => {
@@ -92,24 +72,20 @@ export default function BranchDetailsPage() {
       const branchRes = await fetch('/api/branches');
       if (branchRes.ok) {
         const branches = await branchRes.json();
-
         const slug = params.id;
         const foundIndex = branches.findIndex(b => toBranchSlug(b.name) === slug);
         const foundBranch = foundIndex >= 0 ? branches[foundIndex] : null;
-
         setBranch(foundBranch);
         setBranchIndex(foundIndex >= 0 ? foundIndex : 0);
-
         if (foundBranch) {
           const detailsRes = await fetch(`/api/branch-details/${foundBranch.branchId}`);
           if (detailsRes.ok) setBranchDetails(await detailsRes.json());
         }
       }
-    } catch (error) { console.error('Error:', error); } 
+    } catch (error) { console.error('Error:', error); }
     finally { setLoading(false); }
   };
-  
-  // Get the branch image based on index (same logic as home page)
+
   const getBranchImage = () => `/vihari-${branchIndex === 0 ? 'grand' : 'luxury'}.png`;
 
   const getStartingRent = () => {
@@ -147,41 +123,57 @@ export default function BranchDetailsPage() {
   const foodMenu = branchDetails?.food || { breakfast: [], lunch: [], dinner: [] };
   const rentDetails = branchDetails?.rent || { single: 0, double: 0, triple: 0 };
   const acRentDetails = branchDetails?.acRent || { acSingleSharing: 0, acDoubleSharing: 0, acTripleSharing: 0 };
-  
-  // Safe gallery images handling
+
   const rawGalleryImages = branchDetails?.galleryImages;
-  const galleryImages = Array.isArray(rawGalleryImages) 
+  const galleryImages = Array.isArray(rawGalleryImages)
     ? rawGalleryImages.filter(img => typeof img === 'string' && img.trim() !== '')
     : [];
-  
+
   const startingRent = getStartingRent();
   const hasFoodData = foodMenu.breakfast.length > 0 || foodMenu.lunch.length > 0 || foodMenu.dinner.length > 0;
   const hasRentData = rentDetails.single > 0 || rentDetails.double > 0 || rentDetails.triple > 0;
   const hasAcRentData = acRentDetails.acSingleSharing > 0 || acRentDetails.acDoubleSharing > 0 || acRentDetails.acTripleSharing > 0;
   const hasGalleryImages = Array.isArray(galleryImages) && galleryImages.length > 0;
   const showStats = branchDetails?.showStatsOnLanding !== false;
-  
+
+  // ✅ Google Map Link — from branchDetails (saved by manager)
+  const googleMapLink = branchDetails?.googleMapLink || null;
+
   // Gallery slider logic
   const showGallerySlider = hasGalleryImages && galleryImages.length > 3;
   const maxGalleryIndex = Math.max(0, galleryImages.length - 3);
   const safeGalleryIndex = Math.min(galleryIndex, maxGalleryIndex);
-  const visibleGalleryImages = hasGalleryImages && showGallerySlider 
-    ? galleryImages.slice(safeGalleryIndex, safeGalleryIndex + 3) 
+  const visibleGalleryImages = hasGalleryImages && showGallerySlider
+    ? galleryImages.slice(safeGalleryIndex, safeGalleryIndex + 3)
     : galleryImages;
-  
-  const nextGallerySlide = () => {
-    if (hasGalleryImages && galleryIndex < maxGalleryIndex) setGalleryIndex(prev => prev + 1);
-  };
-  const prevGallerySlide = () => {
-    if (galleryIndex > 0) setGalleryIndex(prev => prev - 1);
-  };
+
+  const nextGallerySlide = () => { if (hasGalleryImages && galleryIndex < maxGalleryIndex) setGalleryIndex(prev => prev + 1); };
+  const prevGallerySlide = () => { if (galleryIndex > 0) setGalleryIndex(prev => prev - 1); };
 
   const handleCall = () => window.open(`tel:${branch.phone}`, '_self');
   const handleWhatsApp = () => window.open(`https://wa.me/91${(branch.whatsappNumber || branch.phone).replace(/[^0-9]/g, '')}`, '_blank');
   const handleEmail = () => window.open(`mailto:${branch.email}`, '_self');
+
+  // ✅ FIXED: "View on Map" and "Navigate" — use googleMapLink from branchDetails
   const handleNavigate = () => {
-    if (branch.googleMapLink) window.open(branch.googleMapLink, '_blank');
+    if (googleMapLink) window.open(googleMapLink, '_blank');
     else window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(branch.address + ', ' + branch.city)}`, '_blank');
+  };
+
+  // ✅ FIXED: Map iframe embed src — use googleMapLink from branchDetails
+  const getMapEmbedSrc = () => {
+    if (googleMapLink) {
+      // Convert share link to embed link
+      // e.g. https://maps.google.com/maps?q=... → add &output=embed
+      // e.g. https://www.google.com/maps/place/... → convert to embed format
+      if (googleMapLink.includes('output=embed')) return googleMapLink;
+      if (googleMapLink.includes('/maps/embed')) return googleMapLink;
+      // For standard share links, append output=embed
+      const separator = googleMapLink.includes('?') ? '&' : '?';
+      return `${googleMapLink}${separator}output=embed`;
+    }
+    // Fallback: search by address
+    return `https://maps.google.com/maps?q=${encodeURIComponent(branch.address + ', ' + branch.city)}&z=15&output=embed`;
   };
 
   return (
@@ -198,11 +190,7 @@ export default function BranchDetailsPage() {
         {/* Branch Image Section */}
         <div className="mb-6 rounded-3xl overflow-hidden shadow-2xl shadow-purple-500/20">
           <div className="relative h-64 md:h-80 lg:h-96">
-            <img 
-              src={getBranchImage()} 
-              alt={branch.name}
-              className="w-full h-full object-cover"
-            />
+            <img src={getBranchImage()} alt={branch.name} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
               <div className="flex items-center gap-4">
@@ -218,6 +206,7 @@ export default function BranchDetailsPage() {
           </div>
         </div>
 
+        {/* Contact Card */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600/90 via-purple-600/90 to-pink-600/90 p-8 md:p-12 shadow-2xl shadow-purple-500/20">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
@@ -250,6 +239,7 @@ export default function BranchDetailsPage() {
                 )}
               </div>
             </div>
+            {/* ✅ "View on Map" button — uses googleMapLink from branchDetails */}
             <Button onClick={handleNavigate} className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/20 rounded-xl px-6 py-3">
               <MapPin className="h-5 w-5 mr-2" />View on Map
             </Button>
@@ -357,8 +347,7 @@ export default function BranchDetailsPage() {
               {hasRentData && (
                 <div>
                   <h4 className="text-base font-semibold text-slate-300 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                    Non-AC Rooms
+                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>Non-AC Rooms
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {rentDetails.single > 0 && (
@@ -404,8 +393,7 @@ export default function BranchDetailsPage() {
               {hasAcRentData && (
                 <div className={hasRentData ? "pt-6 border-t border-white/10" : ""}>
                   <h4 className="text-base font-semibold text-slate-300 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    AC Rooms
+                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>AC Rooms
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {acRentDetails.acSingleSharing > 0 && (
@@ -502,6 +490,7 @@ export default function BranchDetailsPage() {
         )}
       </div>
 
+      {/* Branch Location Card */}
       <div className="container mx-auto px-4 pb-12">
         <Card className="bg-white/5 backdrop-blur-xl border-white/10 overflow-hidden">
           <CardContent className="p-0">
@@ -509,13 +498,27 @@ export default function BranchDetailsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center"><MapPin className="h-6 w-6 text-red-400" /></div>
-                  <div><h3 className="text-lg font-semibold text-white">Branch Location</h3><p className="text-sm text-slate-400">{branch.address}, {branch.city}</p></div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Branch Location</h3>
+                    <p className="text-sm text-slate-400">{branch.address}, {branch.city}</p>
+                  </div>
                 </div>
-                <Button onClick={handleNavigate} className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl px-6"><Navigation className="h-4 w-4 mr-2" />Navigate</Button>
+                {/* ✅ FIXED: Navigate button uses googleMapLink from branchDetails */}
+                <Button onClick={handleNavigate} className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl px-6">
+                  <Navigation className="h-4 w-4 mr-2" />Navigate
+                </Button>
               </div>
             </div>
+            {/* ✅ FIXED: Map iframe uses googleMapLink from branchDetails */}
             <div className="h-[300px] md:h-[400px] bg-slate-800/50">
-              <iframe src={`https://maps.google.com/maps?q=${encodeURIComponent(branch.address + ', ' + branch.city)}&z=15&output=embed`} width="100%" height="100%" style={{ border: 0 }} allowFullScreen="" loading="lazy"></iframe>
+              <iframe
+                src={getMapEmbedSrc()}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+              ></iframe>
             </div>
           </CardContent>
         </Card>

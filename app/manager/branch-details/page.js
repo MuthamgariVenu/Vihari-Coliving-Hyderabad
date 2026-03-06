@@ -13,7 +13,7 @@ import {
   Settings, Wifi, UtensilsCrossed, Flame, WashingMachine, Car, Dumbbell, Shield,
   Save, Home, Bed, IndianRupee, Coffee, Sun, Moon, CheckCircle, Loader2, RefreshCw,
   Refrigerator, Droplets, Zap, ThermometerSun, CookingPot, Camera, Eye, Bike, Sparkles,
-  ImagePlus, Trash2, Replace, X, ChevronLeft, ChevronRight
+  ImagePlus, Trash2, Replace, X, ChevronLeft, ChevronRight, MapPin, Link
 } from 'lucide-react';
 
 // Complete PG Facilities list
@@ -61,6 +61,9 @@ export default function ManagerBranchDetailsPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [replacingIndex, setReplacingIndex] = useState(null);
 
+  // ✅ NEW: Google Map Link state
+  const [googleMapLink, setGoogleMapLink] = useState('');
+
   // Stats (auto-calculated)
   const [stats, setStats] = useState({
     totalRooms: 0,
@@ -74,7 +77,6 @@ export default function ManagerBranchDetailsPage() {
 
   const loadManagerBranch = async () => {
     try {
-      // Get manager's branch from localStorage
       const userStr = localStorage.getItem('user');
       if (!userStr) return;
 
@@ -88,13 +90,11 @@ export default function ManagerBranchDetailsPage() {
       setBranchId(user.branchId);
       setBranchName(user.branchName || 'My Branch');
 
-      // Load existing branch details
       const branchDetails = await branchDetailsAPI.getByBranchId(user.branchId);
       
       if (branchDetails) {
         setFacilities(branchDetails.facilities || []);
         
-        // Parse food arrays to newline-separated strings
         if (branchDetails.food) {
           setBreakfast((branchDetails.food.breakfast || []).join('\n'));
           setLunch((branchDetails.food.lunch || []).join('\n'));
@@ -117,14 +117,13 @@ export default function ManagerBranchDetailsPage() {
           setStats(branchDetails.stats);
         }
 
-        // Load show stats setting
         setShowStatsOnLanding(branchDetails.showStatsOnLanding !== false);
-        
-        // Load gallery images
         setGalleryImages(branchDetails.galleryImages || []);
+
+        // ✅ NEW: Load Google Map Link
+        setGoogleMapLink(branchDetails.googleMapLink || '');
       }
 
-      // Also load room/bed stats directly
       await loadStats(user.branchId);
 
     } catch (error) {
@@ -170,7 +169,6 @@ export default function ManagerBranchDetailsPage() {
     setSaveSuccess(false);
 
     try {
-      // Parse text areas into arrays
       const breakfastItems = breakfast.split('\n').map(s => s.trim()).filter(s => s);
       const lunchItems = lunch.split('\n').map(s => s.trim()).filter(s => s);
       const dinnerItems = dinner.split('\n').map(s => s.trim()).filter(s => s);
@@ -194,16 +192,16 @@ export default function ManagerBranchDetailsPage() {
           acTripleSharing: parseInt(acTripleSharing) || 0
         },
         showStatsOnLanding,
-        galleryImages
+        galleryImages,
+        // ✅ NEW: Save Google Map Link
+        googleMapLink: googleMapLink.trim(),
       };
 
       await branchDetailsAPI.create(data);
       setSaveSuccess(true);
 
-      // Reload stats
       await loadStats(branchId);
 
-      // Reset success message after 3 seconds
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       console.error('Error saving branch details:', error);
@@ -421,6 +419,53 @@ export default function ManagerBranchDetailsPage() {
           </CardContent>
         </Card>
 
+        {/* ✅ NEW: Google Map Link Section */}
+        <Card className="border-2 border-blue-100">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-blue-500" />
+              Google Map Location
+            </CardTitle>
+            <CardDescription>
+              Add your Google Maps link so visitors can navigate directly to your branch
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="font-medium text-slate-700">Google Maps Link</Label>
+              <div className="relative">
+                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  type="url"
+                  placeholder="https://maps.google.com/maps?q=..."
+                  value={googleMapLink}
+                  onChange={(e) => setGoogleMapLink(e.target.value)}
+                  className="pl-10"
+                  data-testid="google-map-link-input"
+                />
+              </div>
+              <p className="text-sm text-slate-500">
+                Go to Google Maps → find your branch → click Share → Copy link → paste here
+              </p>
+            </div>
+
+            {/* Preview */}
+            {googleMapLink && (
+              <div className="mt-2">
+                <a
+                  href={googleMapLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                >
+                  <MapPin className="h-4 w-4" />
+                  Preview link →
+                </a>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Facilities Section */}
         <Card>
           <CardHeader>
@@ -557,7 +602,6 @@ Sweet"
                 Non-AC Rooms
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Single Sharing (Non-AC) */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold text-slate-700">Single Sharing (Non-AC)</Label>
                   <div className="relative">
@@ -574,7 +618,6 @@ Sweet"
                   <p className="text-sm text-slate-500">1 Person per Room</p>
                 </div>
 
-                {/* Double Sharing (Non-AC) */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold text-slate-700">Double Sharing (Non-AC)</Label>
                   <div className="relative">
@@ -591,7 +634,6 @@ Sweet"
                   <p className="text-sm text-slate-500">2 Persons per Room</p>
                 </div>
 
-                {/* Triple Sharing (Non-AC) */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold text-slate-700">Triple Sharing (Non-AC)</Label>
                   <div className="relative">
@@ -617,7 +659,6 @@ Sweet"
                 AC Rooms
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Single Sharing (AC) */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold text-slate-700">Single Sharing (AC)</Label>
                   <div className="relative">
@@ -634,7 +675,6 @@ Sweet"
                   <p className="text-sm text-slate-500">1 Person per Room (AC)</p>
                 </div>
 
-                {/* Double Sharing (AC) */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold text-slate-700">Double Sharing (AC)</Label>
                   <div className="relative">
@@ -651,7 +691,6 @@ Sweet"
                   <p className="text-sm text-slate-500">2 Persons per Room (AC)</p>
                 </div>
 
-                {/* Triple Sharing (AC) */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold text-slate-700">Triple Sharing (AC)</Label>
                   <div className="relative">
@@ -682,7 +721,6 @@ Sweet"
             <CardDescription>Upload and manage branch photos for the landing page</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Upload Button */}
             <div className="mb-6">
               <label className="cursor-pointer">
                 <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl hover:border-purple-400 hover:bg-purple-50/50 transition-all">
@@ -711,7 +749,6 @@ Sweet"
               </label>
             </div>
 
-            {/* Image Grid */}
             {galleryImages.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {galleryImages.map((image, index) => {
@@ -723,13 +760,11 @@ Sweet"
                         alt={`Gallery ${index + 1}`}
                         className="w-full h-32 object-cover rounded-xl"
                       />
-                      {/* Overlay with actions */}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-xl">
                         {replacingIndex === index ? (
                           <Loader2 className="h-5 w-5 text-white animate-spin" />
                         ) : (
                           <>
-                            {/* Replace Button */}
                             <label className="cursor-pointer">
                               <div className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center transition-colors" title="Replace">
                                 <Replace className="h-4 w-4 text-white" />
@@ -742,7 +777,6 @@ Sweet"
                                 data-testid={`replace-image-${index}`}
                               />
                             </label>
-                            {/* Delete Button */}
                             <button
                               onClick={() => handleDeleteImage(index)}
                               className="w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition-colors"
@@ -754,7 +788,6 @@ Sweet"
                           </>
                         )}
                       </div>
-                      {/* Image number badge */}
                       <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
                         {index + 1}
                       </div>
