@@ -605,7 +605,7 @@ export default function HomePage() {
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-base font-black tracking-wide aurora-text">Venu M</h3>
+                        <h3 className="text-base font-black tracking-wide aurora-text">Venu Muthamgari</h3>
                         <p className="text-xs font-semibold" style={{ color: 'rgba(52,211,153,0.7)' }}>⚡ Full Stack Developer</p>
                       </div>
                       {/* Close button */}
