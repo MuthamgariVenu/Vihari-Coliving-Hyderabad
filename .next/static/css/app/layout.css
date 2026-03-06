@@ -5086,6 +5086,10 @@ code {
     height: 400px;
   }
 
+  .md\:h-8 {
+    height: 2rem;
+  }
+
   .md\:w-64 {
     width: 16rem;
   }
@@ -5100,6 +5104,10 @@ code {
 
   .md\:w-auto {
     width: auto;
+  }
+
+  .md\:w-8 {
+    width: 2rem;
   }
 
   .md\:max-w-\[420px\] {
@@ -5148,6 +5156,10 @@ code {
 
   .md\:p-8 {
     padding: 2rem;
+  }
+
+  .md\:p-4 {
+    padding: 1rem;
   }
 
   .md\:text-4xl {
