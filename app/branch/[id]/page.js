@@ -20,9 +20,7 @@ const facilityIcons = {
   'Food': UtensilsCrossed, 
   'Hot Water': Flame,
   'Washing Machine': WashingMachine, 
-  
-  'Two Wheeler Parking': Car,   // changed
-
+  'Two Wheeler Parking': Car,
   'Gym': Dumbbell, 
   'Security': Shield,
   'Security / CCTV': Camera,
@@ -31,7 +29,6 @@ const facilityIcons = {
   'Power Backup': Zap,
   'Geyser': ThermometerSun,
   'Kitchen': CookingPot,
-
   'Self Cooking': CookingPot,
   'Common Kitchen': CookingPot,
   'Daily Cleaning': Shield,
@@ -40,6 +37,16 @@ const facilityIcons = {
   'Laundry': WashingMachine,
   'AC': ThermometerSun
 };
+
+// Helper: convert branch name to URL slug (same logic as home page)
+function toBranchSlug(name) {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
 
 const ExpandableSection = ({ title, subtitle, buttonText, icon: Icon, children, defaultOpen = false }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -85,13 +92,19 @@ export default function BranchDetailsPage() {
       const branchRes = await fetch('/api/branches');
       if (branchRes.ok) {
         const branches = await branchRes.json();
-        const foundBranch = branches.find(b => b.branchId === params.id);
-        const foundIndex = branches.findIndex(b => b.branchId === params.id);
+
+        const slug = params.id;
+        const foundIndex = branches.findIndex(b => toBranchSlug(b.name) === slug);
+        const foundBranch = foundIndex >= 0 ? branches[foundIndex] : null;
+
         setBranch(foundBranch);
         setBranchIndex(foundIndex >= 0 ? foundIndex : 0);
+
+        if (foundBranch) {
+          const detailsRes = await fetch(`/api/branch-details/${foundBranch.branchId}`);
+          if (detailsRes.ok) setBranchDetails(await detailsRes.json());
+        }
       }
-      const detailsRes = await fetch(`/api/branch-details/${params.id}`);
-      if (detailsRes.ok) setBranchDetails(await detailsRes.json());
     } catch (error) { console.error('Error:', error); } 
     finally { setLoading(false); }
   };
@@ -135,7 +148,7 @@ export default function BranchDetailsPage() {
   const rentDetails = branchDetails?.rent || { single: 0, double: 0, triple: 0 };
   const acRentDetails = branchDetails?.acRent || { acSingleSharing: 0, acDoubleSharing: 0, acTripleSharing: 0 };
   
-  // Safe gallery images handling - ensure it's always an array with valid strings
+  // Safe gallery images handling
   const rawGalleryImages = branchDetails?.galleryImages;
   const galleryImages = Array.isArray(rawGalleryImages) 
     ? rawGalleryImages.filter(img => typeof img === 'string' && img.trim() !== '')
@@ -148,7 +161,7 @@ export default function BranchDetailsPage() {
   const hasGalleryImages = Array.isArray(galleryImages) && galleryImages.length > 0;
   const showStats = branchDetails?.showStatsOnLanding !== false;
   
-  // Gallery slider logic (state moved to top of component)
+  // Gallery slider logic
   const showGallerySlider = hasGalleryImages && galleryImages.length > 3;
   const maxGalleryIndex = Math.max(0, galleryImages.length - 3);
   const safeGalleryIndex = Math.min(galleryIndex, maxGalleryIndex);
@@ -157,15 +170,10 @@ export default function BranchDetailsPage() {
     : galleryImages;
   
   const nextGallerySlide = () => {
-    if (hasGalleryImages && galleryIndex < maxGalleryIndex) {
-      setGalleryIndex(prev => prev + 1);
-    }
+    if (hasGalleryImages && galleryIndex < maxGalleryIndex) setGalleryIndex(prev => prev + 1);
   };
-  
   const prevGallerySlide = () => {
-    if (galleryIndex > 0) {
-      setGalleryIndex(prev => prev - 1);
-    }
+    if (galleryIndex > 0) setGalleryIndex(prev => prev - 1);
   };
 
   const handleCall = () => window.open(`tel:${branch.phone}`, '_self');
@@ -346,7 +354,6 @@ export default function BranchDetailsPage() {
         <ExpandableSection title="Room Rent Details" subtitle="Room Rent Overview" buttonText="View Rent Details" icon={IndianRupee}>
           {(hasRentData || hasAcRentData) ? (
             <div className="space-y-6 mt-4">
-              {/* Non-AC Rooms */}
               {hasRentData && (
                 <div>
                   <h4 className="text-base font-semibold text-slate-300 mb-4 flex items-center gap-2">
@@ -394,8 +401,6 @@ export default function BranchDetailsPage() {
                   </div>
                 </div>
               )}
-
-              {/* AC Rooms */}
               {hasAcRentData && (
                 <div className={hasRentData ? "pt-6 border-t border-white/10" : ""}>
                   <h4 className="text-base font-semibold text-slate-300 mb-4 flex items-center gap-2">
@@ -448,91 +453,45 @@ export default function BranchDetailsPage() {
           )}
         </ExpandableSection>
 
-        {/* Photo Gallery Section */}
-        {hasGalleryImages && galleryImages.length > 0 && (
+        {hasGalleryImages && (
           <ExpandableSection title="Photo Gallery" subtitle="Branch Photos" buttonText="View Photos" icon={ImageIcon} defaultOpen={true}>
             <div className="mt-4">
               {showGallerySlider ? (
                 <div className="relative">
-                  {/* Slider Navigation */}
                   <div className="flex items-center gap-4">
-                    <button
-                      onClick={prevGallerySlide}
-                      disabled={galleryIndex === 0}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                        galleryIndex === 0 
-                          ? 'bg-slate-700/30 text-slate-500 cursor-not-allowed' 
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
+                    <button onClick={prevGallerySlide} disabled={galleryIndex === 0} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${galleryIndex === 0 ? 'bg-slate-700/30 text-slate-500 cursor-not-allowed' : 'bg-white/10 text-white hover:bg-white/20'}`}>
                       <ChevronLeft className="h-5 w-5" />
                     </button>
-                    
                     <div className="flex-1 grid grid-cols-3 gap-4">
-                      {visibleGalleryImages && visibleGalleryImages.length > 0 && visibleGalleryImages.map((image, idx) => {
+                      {visibleGalleryImages.map((image, idx) => {
                         const imgSrc = typeof image === 'string' ? image : (image?.filePath || image?.url || '');
-                        console.log(`Landing gallery image ${idx}:`, imgSrc);
                         return imgSrc ? (
                           <div key={`gallery-${galleryIndex}-${idx}`} className="rounded-xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all">
-                            <img
-                              src={imgSrc}
-                              alt={`Gallery ${galleryIndex + idx + 1}`}
-                              className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
+                            <img src={imgSrc} alt={`Gallery ${galleryIndex + idx + 1}`} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300" onError={(e) => { e.target.style.display = 'none'; }} />
                           </div>
                         ) : null;
                       })}
                     </div>
-                    
-                    <button
-                      onClick={nextGallerySlide}
-                      disabled={galleryIndex >= maxGalleryIndex}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                        galleryIndex >= maxGalleryIndex 
-                          ? 'bg-slate-700/30 text-slate-500 cursor-not-allowed' 
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
+                    <button onClick={nextGallerySlide} disabled={galleryIndex >= maxGalleryIndex} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${galleryIndex >= maxGalleryIndex ? 'bg-slate-700/30 text-slate-500 cursor-not-allowed' : 'bg-white/10 text-white hover:bg-white/20'}`}>
                       <ChevronRight className="h-5 w-5" />
                     </button>
                   </div>
-                  
-                  {/* Pagination dots */}
                   {galleryImages.length > 3 && (
                     <div className="flex justify-center mt-4 gap-2">
                       {Array.from({ length: maxGalleryIndex + 1 }).map((_, idx) => (
-                        <button
-                          key={`dot-${idx}`}
-                          onClick={() => setGalleryIndex(idx)}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            idx === galleryIndex ? 'bg-purple-500 w-4' : 'bg-white/30 hover:bg-white/50'
-                          }`}
-                        />
+                        <button key={`dot-${idx}`} onClick={() => setGalleryIndex(idx)} className={`w-2 h-2 rounded-full transition-all ${idx === galleryIndex ? 'bg-purple-500 w-4' : 'bg-white/30 hover:bg-white/50'}`} />
                       ))}
                     </div>
                   )}
-                  
-                  <p className="text-center text-slate-400 text-sm mt-3">
-                    Showing {safeGalleryIndex + 1}-{Math.min(safeGalleryIndex + 3, galleryImages.length)} of {galleryImages.length} photos
-                  </p>
+                  <p className="text-center text-slate-400 text-sm mt-3">Showing {safeGalleryIndex + 1}-{Math.min(safeGalleryIndex + 3, galleryImages.length)} of {galleryImages.length} photos</p>
                 </div>
               ) : (
-                <div className={`grid gap-4 ${
-                  galleryImages.length === 1 ? 'grid-cols-1' : 
-                  galleryImages.length === 2 ? 'grid-cols-2' : 
-                  'grid-cols-1 md:grid-cols-3'
-                }`}>
+                <div className={`grid gap-4 ${galleryImages.length === 1 ? 'grid-cols-1' : galleryImages.length === 2 ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-3'}`}>
                   {galleryImages.map((image, idx) => {
                     const imgSrc = typeof image === 'string' ? image : (image?.filePath || image?.url || '');
                     return imgSrc ? (
                       <div key={`gallery-item-${idx}`} className="rounded-xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all">
-                        <img
-                          src={imgSrc}
-                          alt={`Gallery ${idx + 1}`}
-                          className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-                          onError={(e) => { e.target.style.display = 'none'; }}
-                        />
+                        <img src={imgSrc} alt={`Gallery ${idx + 1}`} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300" onError={(e) => { e.target.style.display = 'none'; }} />
                       </div>
                     ) : null;
                   })}
@@ -549,14 +508,10 @@ export default function BranchDetailsPage() {
             <div className="p-6 border-b border-white/10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center">
-                    <MapPin className="h-6 w-6 text-red-400" />
-                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center"><MapPin className="h-6 w-6 text-red-400" /></div>
                   <div><h3 className="text-lg font-semibold text-white">Branch Location</h3><p className="text-sm text-slate-400">{branch.address}, {branch.city}</p></div>
                 </div>
-                <Button onClick={handleNavigate} className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl px-6">
-                  <Navigation className="h-4 w-4 mr-2" />Navigate
-                </Button>
+                <Button onClick={handleNavigate} className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl px-6"><Navigation className="h-4 w-4 mr-2" />Navigate</Button>
               </div>
             </div>
             <div className="h-[300px] md:h-[400px] bg-slate-800/50">
