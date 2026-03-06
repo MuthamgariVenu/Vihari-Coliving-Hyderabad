@@ -41,6 +41,7 @@ export default function HomePage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showDevEmail, setShowDevEmail] = useState(false);
   const dropdownRef = useRef(null);
+  const devSectionRef = useRef(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -534,7 +535,7 @@ export default function HomePage() {
         </div>
 
         {/* ✨ Developer Showcase — collapsed by default, expands on click */}
-        <div className="dev-showcase-section relative overflow-hidden">
+        <div className="dev-showcase-section relative overflow-hidden" ref={devSectionRef}>
 
           {/* Particles & streaks — only shown when expanded */}
           {showDevEmail && (
@@ -556,7 +557,12 @@ export default function HomePage() {
             {/* COLLAPSED STATE — compact pill */}
             {!showDevEmail ? (
               <button
-                onClick={() => setShowDevEmail(true)}
+                onClick={() => {
+                setShowDevEmail(true);
+                setTimeout(() => {
+                  devSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+              }}
                 className="dev-pill group flex items-center gap-3 rounded-full px-4 py-2 transition-all duration-300 hover:scale-105"
                 style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(139,92,246,0.2)' }}
               >
